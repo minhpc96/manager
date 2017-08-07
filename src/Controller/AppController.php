@@ -43,8 +43,53 @@ class AppController extends Controller
 
         $this->loadComponent('RequestHandler');
         $this->loadComponent('Flash');
+        $this->loadComponent('Auth', [
+            'authorize' => ['Controller'],
+            'authoricate' => [
+                'Form' => [
+                    'fields' => [
+                        'username' => 'username',
+                        'password' => 'password'
+                    ]
+                ]
+            ],
+            'loginRedirect' => [
+                'controller' => 'Users',
+                'action' => 'view'
+            ],
+            'logoutRedirect' => [
+                'controller' => 'Users',
+                'action' => 'login'
+            ]
+        ]);
+    }
+    
+    /**
+     * Is Authorized method
+     * 
+     * @param Users $user
+     * @return bool
+     */
+    public function isAuthorized($user)
+    {
+        if (isset($user['role']) && $user['role'] === 'admin') {
+            return true;
+        }
+        return false;
     }
 
+    /**
+     * beforeFilter method
+     * 
+     * @param $event Event
+     * @return null
+     */
+    public function beforeFilter(Event $event)
+    {
+        $this->Auth->allow(['index', 'view', 'check']);
+        $this->set('current_user', $this->Auth->user());
+    }
+    
     /**
      * Before render callback.
      *
