@@ -215,9 +215,9 @@ return [
              * the following line and set the port accordingly
              */
             //'port' => 'nonstandard_port_number',
-            'username' => 'my_app',
-            'password' => 'secret',
-            'database' => 'my_app',
+            'username' => 'root',
+            'password' => 'abc123',
+            'database' => 'managerment',
             'encoding' => 'utf8',
             'timezone' => 'UTC',
             'cacheMetadata' => true,
