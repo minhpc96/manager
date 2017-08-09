@@ -9,10 +9,8 @@
     <table cellpadding="0" cellspacing="0">
         <thead>
             <tr>
-                <th><?= $this->Paginator->sort('user_id') ?></th>
                 <th><?= $this->Paginator->sort('username') ?></th>
                 <th><?= $this->Paginator->sort('email') ?></th>
-                <th><?= $this->Paginator->sort('password') ?></th>
                 <th><?= $this->Paginator->sort('name') ?></th>
                 <th><?= $this->Paginator->sort('role') ?></th>
                 <th><?= $this->Paginator->sort('parent_id') ?></th>
@@ -22,10 +20,8 @@
         <tbody>
             <?php foreach ($users as $user): ?>
             <tr>
-                <td><?= h($user->id) ?></td>
                 <td><?= h($user->username) ?></td>
                 <td><?= h($user->email) ?></td>
-                <td><?= h($user->password) ?></td>
                 <td><?= h($user->name) ?></td>
                 <td><?= h($user->role) ?></td>
                 <td><?= $user->has('parent_user') ? $this->Html->link($user->parent_user->name, ['controller' => 'Users', 'action' => 'view', $user->parent_user->user_id]) : '' ?></td>

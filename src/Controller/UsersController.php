@@ -2,6 +2,10 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Mailer\Email;
+use Cake\Routing\Router;
+use Cake\Utility\Security;
+use Cake\I18n\Time;
 
 /**
  * Users Controller
@@ -10,6 +14,7 @@ use App\Controller\AppController;
  */
 class UsersController extends AppController
 {
+
     /**
      * Before filter method
      * 
@@ -19,8 +24,8 @@ class UsersController extends AppController
     public function beforeFilter(\Cake\Event\Event $event)
     {
         parent::beforeFilter($event);
-        
-        $this->Auth->allow('add');
+
+        $this->Auth->allow(['add', 'active']);
     }
 
     /**
@@ -57,26 +62,81 @@ class UsersController extends AppController
     }
 
     /**
+     * Send email method
+     * 
+     * @param array $user, String $url
+     * @return null
+     */
+    public function sendEmail($user, $url)
+    {
+        $email = new Email();
+        $email->from('myemail@email.com')
+            ->to($user->email)
+            ->subject('Verify your account')
+            ->message();
+        $content = "Your account has been created, Click link to verify: ";
+        $content .= $url;
+        $content .= "\n Username: " . $this->request->data['username'];
+        $content .= "\n Password: " . $this->request->data['password'];
+        $email->send($content);
+    }
+
+    /**
+     * Activation method
+     * 
+     * @param string $token
+     * @return null
+     */
+    public function active($token = null)
+    {
+        if (!empty($token)) {
+            $user = $this->Users->find()->where(['token' => $token, 'timeout >' => time()])->first();
+            if ($user) {
+                //set timeout is null and reset token
+                $user->timeout = null;
+                $new_token = sha1($user->username . rand(1, 100));
+                $user->token = $new_token;
+                $this->Users->save($user);
+            } else {
+                $this->redirect('/');
+            }
+        }
+    }
+
+    /**
      * Add method
      *
      * @return \Cake\Network\Response|void Redirects on successful add, renders view otherwise.
      */
     public function add()
     {
+        //add data into Users and Managers Table
+        $manager = $this->Users->Managers->newEntity();
         $user = $this->Users->newEntity();
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->data);
-            echo $user->name;
+            $manager->department_id = $this->request->data('department_id');
+            //create token and send email to active
+            $key = Security::hash(uniqid());
+            //create timeout check 1 day
+            $timeout = time() + DAY;
+            $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key ;
+            $user->token = $key;
+            $user->timeout = $timeout;
             if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-                return $this->redirect(['action' => 'index']);
+                $manager->user_id = $user->user_id;
+                if ($this->Users->Managers->save($manager)) {
+                    $this->sendEmail($user, $url);
+                    $this->Flash->success(__('The user has been created.'));
+                    return $this->redirect(['action' => 'index']);
+                }
             } else {
                 $this->Flash->error(__('The user could not be saved. Please, try again.'));
             }
         }
-        $users = $this->Users->Managers->Departments->find('list', ['limit' => 200]);
+        $departments = $this->Users->Managers->Departments->find('list', ['limit' => 200]);
         $parentUsers = $this->Users->ParentUsers->find('list', ['limit' => 200]);
-        $this->set(compact('user', 'users', 'parentUsers'));
+        $this->set(compact('user', 'departments', 'parentUsers'));
         $this->set('_serialize', ['user']);
     }
 
@@ -125,16 +185,16 @@ class UsersController extends AppController
         }
         return $this->redirect(['action' => 'index']);
     }
-    
+
     /**
      * Login method
      * 
      * @return null set user login in this session
      */
-    public function login(){
+    public function login()
+    {
         if ($this->request->is('post')) {
             $user = $this->Auth->identify();
-            echo $user->name;
             if ($user) {
                 $this->Auth->setUser($user);
                 return $this->redirect(['controller' => 'Users', 'action' => 'index']);
@@ -142,7 +202,7 @@ class UsersController extends AppController
             $this->Flash->error(__('Incorrect! Try again'));
         }
     }
-    
+
     /**
      * IsAuthorized method
      * 
@@ -164,5 +224,4 @@ class UsersController extends AppController
 
         return parent::isAuthorized($user);
     }
-    
 }

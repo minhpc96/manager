@@ -16,6 +16,7 @@
             echo $this->Form->input('password');
             echo $this->Form->input('name');
             echo $this->Form->input('role');
+            echo $this->Form->input('department_id', ['options' => $departments, 'empty' => false]);
             echo $this->Form->input('parent_id', ['options' => $parentUsers, 'empty' => true]);
         ?>
     </fieldset>
