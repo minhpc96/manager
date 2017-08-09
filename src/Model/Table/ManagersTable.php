@@ -52,17 +52,17 @@ class ManagersTable extends Table
     {
         $validator
             ->add('isManager', 'valid', ['rule' => 'boolean'])
-            ->requirePresence('isManager', 'create')
-            ->notEmpty('isManager');
+//            ->requirePresence('isManager', 'create')
+            ->allowEmpty('isManager');
 
         $validator
             ->add('del_lag', 'valid', ['rule' => 'datetime'])
-            ->requirePresence('del_lag', 'create')
+//            ->requirePresence('del_lag', 'create')
             ->notEmpty('del_lag');
 
         $validator
             ->add('modify', 'valid', ['rule' => 'datetime'])
-            ->requirePresence('modify', 'create')
+//            ->requirePresence('modify', 'create')
             ->notEmpty('modify');
 
         return $validator;
@@ -77,8 +77,8 @@ class ManagersTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['user_id'], 'Users'));
-        $rules->add($rules->existsIn(['department_id'], 'Departments'));
+//        $rules->add($rules->existsIn(['user_id'], 'Users'));
+//        $rules->add($rules->existsIn(['department_id'], 'Departments'));
         return $rules;
     }
 }

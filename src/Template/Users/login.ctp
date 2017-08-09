@@ -7,7 +7,6 @@
         <?= $this->Form->input('password') ?>
     </fieldset>
 <?= $this->Form->button(__('Login')); ?>
-<?= $this->Html->link(__('Register'), ['controller' => 'Users', 'action' => 'add']) ?>
 <?= $this->Form->end() ?>
 </div>
 
