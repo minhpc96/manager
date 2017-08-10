@@ -36,9 +36,7 @@ class DepartmentsController extends AppController
      */
     public function view($id = null)
     {
-        $department = $this->Departments->get($id, [
-            'contain' => ['Departments']
-        ]);
+        $department = $this->Departments->get($id);
 
         $this->set('department', $department);
         $this->set('_serialize', ['department']);
@@ -61,8 +59,7 @@ class DepartmentsController extends AppController
                 $this->Flash->error(__('The department could not be saved. Please, try again.'));
             }
         }
-        $departments = $this->Departments->Departments->find('list', ['limit' => 200]);
-        $this->set(compact('department', 'departments'));
+        $this->set(compact('department'));
         $this->set('_serialize', ['department']);
     }
 
@@ -75,11 +72,10 @@ class DepartmentsController extends AppController
      */
     public function edit($id = null)
     {
-        $department = $this->Departments->get($id, [
-            'contain' => []
-        ]);
+        $department = $this->Departments->get($id);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $department = $this->Departments->patchEntity($department, $this->request->data);
+            $department->modify = time();
             if ($this->Departments->save($department)) {
                 $this->Flash->success(__('The department has been saved.'));
                 return $this->redirect(['action' => 'index']);
@@ -87,8 +83,7 @@ class DepartmentsController extends AppController
                 $this->Flash->error(__('The department could not be saved. Please, try again.'));
             }
         }
-        $departments = $this->Departments->Departments->find('list', ['limit' => 200]);
-        $this->set(compact('department', 'departments'));
+        $this->set(compact('department'));
         $this->set('_serialize', ['department']);
     }
 
@@ -103,11 +98,30 @@ class DepartmentsController extends AppController
     {
         $this->request->allowMethod(['post', 'delete']);
         $department = $this->Departments->get($id);
-        if ($this->Departments->delete($department)) {
+        if ($this->Departments->Managers->query()
+                                        ->delete()
+                                        ->where(['department_id' => $department->department_id])
+                                        ->execute() && 
+            $this->Departments->delete($department)) {
             $this->Flash->success(__('The department has been deleted.'));
         } else {
             $this->Flash->error(__('The department could not be deleted. Please, try again.'));
         }
         return $this->redirect(['action' => 'index']);
+    }
+
+    /**
+     * IsAuthorized method
+     * 
+     * @param Users $user
+     * @return boolean
+     */
+    public function isAuthorized($user)
+    {
+        // Admin has full access
+        if ($user['role'] == 'admin') {
+            return true;
+        }
+        return parent::isAuthorized($user);
     }
 }

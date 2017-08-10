@@ -53,16 +53,6 @@ class DepartmentsTable extends Table
             ->requirePresence('detail', 'create')
             ->notEmpty('detail');
 
-        $validator
-            ->add('del_flag', 'valid', ['rule' => 'datetime'])
-            ->requirePresence('del_flag', 'create')
-            ->notEmpty('del_flag');
-
-        $validator
-            ->add('modify', 'valid', ['rule' => 'datetime'])
-            ->requirePresence('modify', 'create')
-            ->notEmpty('modify');
-
         return $validator;
     }
 
@@ -75,7 +65,6 @@ class DepartmentsTable extends Table
      */
     public function buildRules(RulesChecker $rules)
     {
-        $rules->add($rules->existsIn(['department_id'], 'Departments'));
         return $rules;
     }
 }

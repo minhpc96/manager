@@ -5,16 +5,14 @@
         <li><?= $this->Form->postLink(__('Delete Department'), ['action' => 'delete', $department->department_id], ['confirm' => __('Are you sure you want to delete # {0}?', $department->department_id)]) ?> </li>
         <li><?= $this->Html->link(__('List Departments'), ['action' => 'index']) ?> </li>
         <li><?= $this->Html->link(__('New Department'), ['action' => 'add']) ?> </li>
-        <li><?= $this->Html->link(__('List Departments'), ['controller' => 'Departments', 'action' => 'index']) ?> </li>
-        <li><?= $this->Html->link(__('New Department'), ['controller' => 'Departments', 'action' => 'add']) ?> </li>
     </ul>
 </nav>
 <div class="departments view large-9 medium-8 columns content">
     <h3><?= h($department->department_id) ?></h3>
     <table class="vertical-table">
         <tr>
-            <th><?= __('Department') ?></th>
-            <td><?= $department->has('department') ? $this->Html->link($department->department->department_id, ['controller' => 'Departments', 'action' => 'view', $department->department->department_id]) : '' ?></td>
+            <th><?= __('Department ID') ?></th>
+            <td><?= h($department->department_id) ?></td>
         </tr>
         <tr>
             <th><?= __('Department Name') ?></th>
@@ -27,10 +25,6 @@
         <tr>
             <th><?= __('Created') ?></th>
             <td><?= h($department->created) ?></td>
-        </tr>
-        <tr>
-            <th><?= __('Del Flag') ?></th>
-            <td><?= h($department->del_flag) ?></td>
         </tr>
         <tr>
             <th><?= __('Modify') ?></th>
