@@ -2,7 +2,6 @@
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
         <li><?= $this->Html->link(__('List Departments'), ['action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('List Departments'), ['controller' => 'Departments', 'action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('New Department'), ['controller' => 'Departments', 'action' => 'add']) ?></li>
     </ul>
 </nav>
@@ -12,9 +11,7 @@
         <legend><?= __('Add Department') ?></legend>
         <?php
             echo $this->Form->input('department_name');
-            echo $this->Form->input('detail');
-            echo $this->Form->input('del_flag');
-            echo $this->Form->input('modify');
+            echo $this->Form->input('detail');;
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>

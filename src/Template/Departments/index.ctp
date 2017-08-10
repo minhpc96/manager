@@ -13,7 +13,6 @@
                 <th><?= $this->Paginator->sort('department_name') ?></th>
                 <th><?= $this->Paginator->sort('detail') ?></th>
                 <th><?= $this->Paginator->sort('created') ?></th>
-                <th><?= $this->Paginator->sort('del_flag') ?></th>
                 <th><?= $this->Paginator->sort('modify') ?></th>
                 <th class="actions"><?= __('Actions') ?></th>
             </tr>
@@ -25,7 +24,6 @@
                 <td><?= h($department->department_name) ?></td>
                 <td><?= h($department->detail) ?></td>
                 <td><?= h($department->created) ?></td>
-                <td><?= h($department->del_flag) ?></td>
                 <td><?= h($department->modify) ?></td>
                 <td class="actions">
                     <?= $this->Html->link(__('View'), ['action' => 'view', $department->department_id]) ?>
