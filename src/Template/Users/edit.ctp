@@ -8,7 +8,6 @@
             )
         ?></li>
         <li><?= $this->Html->link(__('List Users'), ['action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('List Users'), ['controller' => 'Users', 'action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('New User'), ['controller' => 'Users', 'action' => 'add']) ?></li>
     </ul>
 </nav>
@@ -21,10 +20,23 @@
             echo $this->Form->input('email');
             echo $this->Form->input('password');
             echo $this->Form->input('name');
-            echo $this->Form->input('role');
-            echo $this->Form->input('parent_id', ['options' => $parentUsers, 'empty' => true]);
-            echo $this->Form->input('del_flag');
-            echo $this->Form->input('modify');
+            echo $this->Form->input('role', ['options' => ['admin' => 'Admin', 'user' => 'User'], 'empty' => false]);
+            $ofdepartments = null;
+            $i = 0;
+            foreach ($user->managers as $manager) {
+                $ofdepartments[$i] = $manager->department_id;
+                $i++;
+            }
+            echo $this->Form->input('department_id', ['type' => 'select', 'multiple' => 'checkbox', 'options' => $departments, 'default' => $ofdepartments]);
+            $managers = null;
+            $i = 0;
+            foreach ($user->managers as $manager) {
+                if (!is_null($manager->isManager)) {
+                    $managers[$i] = $manager->department_id;
+                    $i++;
+                }
+            }
+            echo $this->Form->input('manager', ['type' => 'select', 'multiple' => 'checkbox' , 'options' => $departments, 'default' => $managers]);
         ?>
     </fieldset>
     <?= $this->Form->button(__('Submit')) ?>
