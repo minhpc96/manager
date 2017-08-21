@@ -27,8 +27,7 @@ class ManagersTable extends Table
         parent::initialize($config);
 
         $this->table('managers');
-        $this->displayField('user_id');
-        $this->primaryKey(['user_id', 'department_id']);
+        $this->displayField(['department_id']);
 
         $this->addBehavior('Timestamp');
 

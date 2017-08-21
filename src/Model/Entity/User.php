@@ -14,10 +14,6 @@ use Cake\Auth\DefaultPasswordHasher;
  * @property string $password
  * @property string $name
  * @property string $role
- * @property int $parent_id
- * @property \App\Model\Entity\User $parent_user
- * @property int $lft
- * @property int $rght
  * @property string|resource $avatar
  * @property \Cake\I18n\Time $del_flag
  * @property \Cake\I18n\Time $created

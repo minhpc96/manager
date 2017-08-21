@@ -32,19 +32,10 @@ class UsersTable extends Table
         $this->primaryKey('user_id');
 
         $this->addBehavior('Timestamp');
-        $this->addBehavior('Tree');
 
         $this->hasMany('Managers', [
             'foreignKey' => 'user_id',
             'joinType' => 'INNER'
-        ]);
-        $this->belongsTo('ParentUsers', [
-            'className' => 'Users',
-            'foreignKey' => 'parent_id'
-        ]);
-        $this->hasMany('ChildUsers', [
-            'className' => 'Users',
-            'foreignKey' => 'parent_id'
         ]);
     }
 
@@ -57,48 +48,51 @@ class UsersTable extends Table
     public function validationDefault(Validator $validator)
     {
         $validator
-//            ->requirePresence('username', 'create')
             ->notEmpty('username')
-            ->add('username', 'unique', ['rule' => 'validateUnique', 'provider' => 'table']);
+            ->add('username', 'unique', ['rule' => 'validateUnique', 'provider' => 'table'])
+            ->add('username', [
+                'minLength' => [
+                    'rule' => ['minLength', 8],
+                    'message' => 'The username need more 8 charater '
+                ],
+                'maxLength' => [
+                    'rule' => ['maxLength', 16],
+                    'message' => 'The username is too long (max 16 charater)'
+                ]
+            ]);
 
         $validator
             ->add('email', 'valid', ['rule' => 'email'])
-//            ->requirePresence('email', 'create')
             ->notEmpty('email');
 
         $validator
-            ->notEmpty('password');
+            ->notEmpty('password')
+            ->add('password', [
+                'minLength' => [
+                    'rule' => ['minLength', 8],
+                    'message' => 'Too short! (Min is 8)'
+                ],
+                'ruleName' => [
+                    'rule' => ['custom', '(^(?=.*?[a-z])(?=.*?[0-9]))'],
+                    'message' => 'So simple! Password need both word and number'
+                ]
+            ]);
 
         $validator
-//            ->requirePresence('name', 'create')
-            ->notEmpty('name');
+            ->notEmpty('name')
+            ->add('name', [
+                'minLength' => [
+                    'rule' => ['minLength', 10],
+                    'message' => 'The name need more 10 charater '
+                ],
+            ]);
 
         $validator
             ->allowEmpty('role');
 
         $validator
-            ->add('lft', 'valid', ['rule' => 'numeric'])
-//            ->requirePresence('lft', 'create')
-            ->notEmpty('lft');
-
-        $validator
-            ->add('rght', 'valid', ['rule' => 'numeric'])
-//            ->requirePresence('rght', 'create')
-            ->notEmpty('rght');
-
-        $validator
-//            ->requirePresence('avatar', 'create')
             ->allowEmpty('avatar');
 
-//        $validator
-//            ->add('created', 'valid', ['rule' => 'datetime'])
-//            ->requirePresence('created', 'create')
-//            ->notEmpty('created');
-//
-//        $validator
-//            ->add('modify', 'valid', ['rule' => 'datetime'])
-//            ->requirePresence('modify', 'create')
-//            ->notEmpty('modify');
 
         return $validator;
     }

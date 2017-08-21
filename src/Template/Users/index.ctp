@@ -10,10 +10,9 @@
         <thead>
             <tr>
                 <th><?= $this->Paginator->sort('username') ?></th>
-                <th><?= $this->Paginator->sort('email') ?></th>
                 <th><?= $this->Paginator->sort('name') ?></th>
+                <th><?= $this->Paginator->sort('email') ?></th>
                 <th><?= $this->Paginator->sort('role') ?></th>
-                <th><?= $this->Paginator->sort('parent_id') ?></th>
                 <th class="actions"><?= __('Actions') ?></th>
             </tr>
         </thead>
@@ -21,12 +20,10 @@
             <?php foreach ($users as $user): ?>
             <tr>
                 <td><?= h($user->username) ?></td>
+                <td><?= $this->Html->link($user->name, ['action' => 'view', $user->user_id]) ?></td>
                 <td><?= h($user->email) ?></td>
-                <td><?= h($user->name) ?></td>
                 <td><?= h($user->role) ?></td>
-                <td><?= $user->has('parent_user') ? $this->Html->link($user->parent_user->name, ['controller' => 'Users', 'action' => 'view', $user->parent_user->user_id]) : '' ?></td>
                 <td class="actions">
-                    <?= $this->Html->link(__('View'), ['action' => 'view', $user->user_id]) ?>
                     <?= $this->Html->link(__('Edit'), ['action' => 'edit', $user->user_id]) ?>
                     <?= $this->Form->postLink(__('Delete'), ['action' => 'delete', $user->user_id], ['confirm' => __('Are you sure you want to delete # {0}?', $user->user_id)]) ?>
                 </td>
