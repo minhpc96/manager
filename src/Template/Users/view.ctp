@@ -5,11 +5,13 @@
         <li><?= $this->Form->postLink(__('Delete User'), ['action' => 'delete', $user->user_id], ['confirm' => __('Are you sure you want to delete # {0}?', $user->user_id)]) ?> </li>
         <li><?= $this->Html->link(__('List Users'), ['action' => 'index']) ?> </li>
         <li><?= $this->Html->link(__('New User'), ['action' => 'add']) ?> </li>
+        <li><?= $this->Html->link(__('Change Password'), [ 'action' => 'changepassword', $current_user['user_id']]) ?></li>
+        <li><?= $this->Html->link(__('Logout'), ['action' => 'logout']) ?></li>
     </ul>
 </nav>
 <div class="users view large-9 medium-8 columns content">
     <h3><?= h($user->name) ?></h3>
-    <?= $this->Html->image($user->avatar) ?>
+    <?= $this->Html->image(!empty($user->avatar) ? $user->avatar : 'cake.icon.png') ?>
     <table class="vertical-table">
         <tr>
             <th><?= __('User ID') ?></th>

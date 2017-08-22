@@ -8,7 +8,8 @@
             )
         ?></li>
         <li><?= $this->Html->link(__('List Users'), ['action' => 'index']) ?></li>
-        <li><?= $this->Html->link(__('New User'), ['controller' => 'Users', 'action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('Change Password'), [ 'action' => 'changepassword', $current_user['user_id']]) ?></li>
+        <li><?= $this->Html->link(__('Logout'), ['action' => 'logout']) ?></li>
     </ul>
 </nav>
 <div class="users form large-9 medium-8 columns content">
