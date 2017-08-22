@@ -5,7 +5,6 @@ use App\Controller\AppController;
 use Cake\Mailer\Email;
 use Cake\Routing\Router;
 use Cake\Utility\Security;
-use Cake\Auth\DefaultPasswordHasher;
 
 /**
  * Users Controller
@@ -60,8 +59,8 @@ class UsersController extends AppController
         $user = $this->Users->get($id, [
             'contain' => ['Managers', 'Managers.Departments'],
         ]);
-
-        $this->set('user', $user);
+        $relatedusers = $this->Users->Managers->find('all', ['contain' => ['Users']]);
+        $this->set(compact('user', 'relatedusers'));
         $this->set('_serialize', ['user']);
     }
 
@@ -100,7 +99,7 @@ class UsersController extends AppController
         if (!empty($token)) {
             $user = $this->Users->find()->where(['token' => $token, 'timeout >' => time()])->first();
             if ($user) {
-//set timeout is null and reset token
+                //set timeout is null and reset token
                 $user->timeout = null;
                 $new_token = sha1($user->username . rand(1, 100));
                 $user->token = $new_token;
@@ -118,7 +117,7 @@ class UsersController extends AppController
      */
     public function add()
     {
-//add data into Users and Managers Table
+        //add data into Users and Managers Table
         $user = $this->Users->newEntity();
         if ($this->request->is('post')) {
             $user = $this->Users->patchEntity($user, $this->request->data);
@@ -129,9 +128,9 @@ class UsersController extends AppController
             if (move_uploaded_file($this->request->data['avatar']['tmp_name'], $uploadFile)) {
                 $user->avatar = $filename;
             }
-//create token and send email to active
+            //create token and send email to active
             $key = Security::hash(uniqid());
-//create timeout check 1 day
+            //create timeout check 1 day
             $timeout = time() + DAY;
             $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
             $user->token = $key;
@@ -176,18 +175,18 @@ class UsersController extends AppController
             'contain' => ['Managers', 'Managers.Departments']
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
-//Change in users table
+        //Change in users table
             $user = $this->Users->patchEntity($user, $this->request->data);
             $user->modify = time();
-//Change in Manager table
-//Delete all record and add again
+        //Change in Manager table
+            //Delete all record and add again
             $this->Users->Managers->query()->delete()
                 ->where(['user_id' => $user->user_id])
                 ->execute();
             if ($this->Users->save($user)) {
                 $department_ids = $this->request->data('department_id');
                 $managers = $this->request->data('manager');
-//Add relationship users with departments
+                //Add relationship users with departments
                 foreach ($department_ids as $department_id) {
                     $manager = $this->Users->Managers->newEntity();
                     $manager->department_id = $department_id;
@@ -277,7 +276,7 @@ class UsersController extends AppController
             return $this->redirect(['action' => 'index']);
         }
     }
-    
+
     /**
      * Change password method
      * 
@@ -324,7 +323,7 @@ class UsersController extends AppController
             $this->Flash->error(__('Incorrect! Try again'));
         }
     }
-    
+
     /**
      * Logout method
      * 
@@ -344,12 +343,16 @@ class UsersController extends AppController
      */
     public function isAuthorized($user)
     {
-// Admin has full access
+        // Admin has full access
         if ($user['role'] == 'admin') {
             return true;
         }
-// user login can view and edit info and change password
-        if (in_array($this->request->action, ['view', 'edit', 'changepassword'])) {
+        //All user can view info
+        if ($this->request->action == 'view') {
+            return true;
+        }
+        // user login can edit info and change password
+        if (in_array($this->request->action, ['edit', 'changepassword'])) {
             if ($user['user_id'] == $this->request->param('pass.0')) {
                 return true;
             }

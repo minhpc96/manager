@@ -80,4 +80,35 @@
         </table>
     <?php endif; ?>
     </div>
+
+    <div class="related">
+        <h4><?= __('Related Users') ?></h4>
+        <?php if (!empty($user->managers)): ?>
+            <?php foreach ($user->managers as $manager): ?>
+                <?php if (!is_null($manager->isManager)): ?>
+                <table cellpadding="0" cellspacing="0">
+                    <h5><?= h($manager->department->department_name)?></h5>
+                    <tr>
+                        <th><?= __('Name') ?></th>
+                        <th><?= __('Email') ?></th>
+                    </tr>
+                    <?php foreach ($relatedusers as $related): ?>
+                        <?php if ($manager->department_id == $related->department_id && $related->isManager == null): ?>
+                        <tr>
+                            <td>
+                                <?= 
+                                    $this->Html->link($related->user->name, ['controller' => 'Users', 'action' => 'view', $related->user_id]) 
+                                ?>
+                            </td>
+                            <td>
+                                <?= $related->user->email ?>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                </table>   
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </div>
 </div>
