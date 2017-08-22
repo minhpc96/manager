@@ -103,5 +103,6 @@ class AppController extends Controller
         ) {
             $this->set('_serialize', true);
         }
+        $this->set('current_user', $this->Auth->user());
     }
 }

@@ -1,11 +1,10 @@
 <?php
 namespace App\Model\Table;
 
-use App\Model\Entity\User;
-use Cake\ORM\Query;
 use Cake\ORM\RulesChecker;
 use Cake\ORM\Table;
 use Cake\Validation\Validator;
+use Cake\Auth\DefaultPasswordHasher;
 
 /**
  * Users Model
@@ -94,6 +93,45 @@ class UsersTable extends Table
             ->allowEmpty('avatar');
 
 
+        return $validator;
+    }
+    
+    /**
+     * Validation data when change password
+     * 
+     * @param $validator Validator
+     * @return $validator
+     */
+    public function validationPassword(Validator $validator)
+    {
+        $validator
+            //Check old password
+            ->add('oldpassword', 'custom', [
+                'rule' => function($value, $context) {
+                    $user = $this->get($context['data']['user_id']);
+                    if ($user) {
+                        if ((new DefaultPasswordHasher)->check($value, $user->password) || $user->password == $context['data']['oldpassword']) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                'message' => 'Not correct'
+            ])
+            ->notEmpty('oldpassword')
+            //Check new password
+            ->add('newpassword', [
+                'minLength' => [
+                    'rule' => ['minLength', 8],
+                    'message' => 'Too short! (Min is 8)'
+                ],
+                'ruleName' => [
+                    'rule' => ['custom', '(^(?=.*?[a-z])(?=.*?[0-9]))'],
+                    'message' => 'So simple! Password need both word and number'
+                ]
+            ])
+            ->notEmpty('newpassword')
+        ;
         return $validator;
     }
 

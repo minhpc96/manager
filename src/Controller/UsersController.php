@@ -25,7 +25,7 @@ class UsersController extends AppController
     {
         parent::beforeFilter($event);
 
-        $this->Auth->allow(['add', 'active']);
+        $this->Auth->allow(['active', 'logout']);
     }
 
     /**
@@ -277,6 +277,31 @@ class UsersController extends AppController
             return $this->redirect(['action' => 'index']);
         }
     }
+    
+    /**
+     * Change password method
+     * 
+     * @return Redirect on successful
+     */
+    public function changepassword()
+    {
+        $user = $this->Users->get($this->Auth->user('user_id'));
+        //Check old password and method request
+        if ($this->request->is(['patch', 'post', 'put'])) {
+            $user = $this->Users->patchEntity($user, [
+                'oldpassword' => $this->request->data['oldpassword'],
+                'password' => $this->request->data['newpassword'],
+                'newpassword' => $this->request->data['newpassword']
+                ], ['validate' => 'password']
+            );
+            if ($this->Users->save($user)) {
+                $this->Flash->success(__('New password has been saved.'));
+                return $this->redirect($this->Auth->redirectUrl());
+            } else {
+                $this->Flash->error(__('The password could not be saved. Please, try again.'));
+            }
+        }
+    }
 
     /**
      * Login method
@@ -299,6 +324,17 @@ class UsersController extends AppController
             $this->Flash->error(__('Incorrect! Try again'));
         }
     }
+    
+    /**
+     * Logout method
+     * 
+     * @return Redirect on successful
+     */
+    public function logout()
+    {
+        $this->Flash->success('You has been logged out.');
+        return $this->redirect($this->Auth->logout());
+    }
 
     /**
      * IsAuthorized method
@@ -312,8 +348,8 @@ class UsersController extends AppController
         if ($user['role'] == 'admin') {
             return true;
         }
-// user login can view and change user
-        if (in_array($this->request->action, ['view', 'edit'])) {
+// user login can view and edit info and change password
+        if (in_array($this->request->action, ['view', 'edit', 'changepassword'])) {
             if ($user['user_id'] == $this->request->param('pass.0')) {
                 return true;
             }
