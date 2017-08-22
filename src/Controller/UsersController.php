@@ -5,7 +5,7 @@ use App\Controller\AppController;
 use Cake\Mailer\Email;
 use Cake\Routing\Router;
 use Cake\Utility\Security;
-use Cake\Filesystem\File;
+use Cake\Auth\DefaultPasswordHasher;
 
 /**
  * Users Controller
@@ -39,6 +39,10 @@ class UsersController extends AppController
             'contain' => ['Managers']
         ];
         $users = $this->paginate($this->Users);
+        if (!empty($this->request->data)) {
+            $reset = $this->request->data();
+            $this->resetPassword($reset);
+        }
 
         $this->set(compact('users'));
         $this->set('_serialize', ['users']);
@@ -76,8 +80,12 @@ class UsersController extends AppController
             ->message();
         $content = "Your account has been created, Click link to verify: ";
         $content .= $url;
-        $content .= "\n Username: " . $this->request->data['username'];
-        $content .= "\n Password: " . $this->request->data['password'];
+        $content .= "\n Username: " . $user->username;
+        if (!empty($this->request->data['password'])) {
+            $content .= "\n Password: " . $this->request->data['password'];
+        } else {
+            $content .= "\n Password: abcd1234";
+        }
         $email->send($content);
     }
 
@@ -113,42 +121,41 @@ class UsersController extends AppController
 //add data into Users and Managers Table
         $user = $this->Users->newEntity();
         if ($this->request->is('post')) {
+            $user = $this->Users->patchEntity($user, $this->request->data);
             //add avatar
             $filename = $this->request->data('username');
             $uploadpath = 'img/';
             $uploadFile = $uploadpath . $filename;
             if (move_uploaded_file($this->request->data['avatar']['tmp_name'], $uploadFile)) {
-                $user = $this->Users->newEntity();
-                $user = $this->Users->patchEntity($user, $this->request->data);
                 $user->avatar = $filename;
+            }
 //create token and send email to active
-                $key = Security::hash(uniqid());
+            $key = Security::hash(uniqid());
 //create timeout check 1 day
-                $timeout = time() + DAY;
-                $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
-                $user->token = $key;
-                $user->timeout = $timeout;
-                if ($this->Users->save($user)) {
-                    $department_ids = $this->request->data('department_id');
-                    $managers = $this->request->data('manager');
-                    //Add relationship users with departments, with each department_id, check this in array data manager
-                    //If true, set field isManager is not null
-                    foreach ($department_ids as $department_id) {
-                        $manager = $this->Users->Managers->newEntity();
-                        $manager->department_id = $department_id;
-                        $manager->user_id = $user->user_id;
-                        //Check is manager for add
-                        if (!empty($managers) && in_array($department_id, $managers)) {
-                            $manager->isManager = 1;
-                        }
-                        $this->Users->Managers->save($manager);
+            $timeout = time() + DAY;
+            $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
+            $user->token = $key;
+            $user->timeout = $timeout;
+            if ($this->Users->save($user)) {
+                $department_ids = $this->request->data('department_id');
+                $managers = $this->request->data('manager');
+                //Add relationship users with departments, with each department_id, check this in array data manager
+                //If true, set field isManager is not null
+                foreach ($department_ids as $department_id) {
+                    $manager = $this->Users->Managers->newEntity();
+                    $manager->department_id = $department_id;
+                    $manager->user_id = $user->user_id;
+                    //Check is manager for add
+                    if (!empty($managers) && in_array($department_id, $managers)) {
+                        $manager->isManager = 1;
                     }
-                    $this->sendEmail($user, $url);
-                    $this->Flash->success(__('The user has been created.'));
-                    return $this->redirect(['action' => 'index']);
-                } else {
-                    $this->Flash->error(__('The user could not be saved. Please, try again.'));
+                    $this->Users->Managers->save($manager);
                 }
+                $this->sendEmail($user, $url);
+                $this->Flash->success(__('The user has been created.'));
+                return $this->redirect(['action' => 'index']);
+            } else {
+                $this->Flash->error(__('The user could not be saved. Please, try again.'));
             }
         }
         $departments = $this->Users->Managers->Departments->find('list', ['limit' => 200]);
@@ -224,6 +231,54 @@ class UsersController extends AppController
     }
 
     /**
+     * Reset password method
+     * 
+     * @param array $reset
+     * @return Update password of records
+     */
+    public function resetPassword($reset = null)
+    {
+        if (!empty($reset['resetAll'])) {
+            //Send email reset password
+            $users = $this->paginate($this->Users);
+            echo $users;
+            foreach ($users as $user) {
+                echo $user->email;
+                if ($user->role == 'user') {
+                    //create token and send email to active
+                    $key = Security::hash(uniqid());
+                    //create timeout check 1 day
+                    $timeout = time() + DAY;
+                    $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
+                    $user->token = $key;
+                    $user->timeout = $timeout;
+                    $user->password = 'abcd1234';
+                    if ($this->Users->save($user)) {
+                        $this->sendEmail($user, $url);
+                    }
+                }
+            }
+            return $this->redirect(['action' => 'index']);
+        } else {
+            foreach ($reset as $resetId) {
+                $user = $this->Users->get($resetId);
+                //create token and send email to active
+                $key = Security::hash(uniqid());
+                //create timeout check 1 day
+                $timeout = time() + DAY;
+                $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
+                $user->token = $key;
+                $user->timeout = $timeout;
+                $user->password = 'abcd1234';
+                if ($this->Users->save($user)) {
+                    $this->sendEmail($user, $url);
+                }
+            }
+            return $this->redirect(['action' => 'index']);
+        }
+    }
+
+    /**
      * Login method
      * 
      * @return null set user login in this session
@@ -233,8 +288,13 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $user = $this->Auth->identify();
             if ($user) {
-                $this->Auth->setUser($user);
-                return $this->redirect(['controller' => 'Users', 'action' => 'index']);
+                if ($user['role'] == 'admin') {
+                    $this->Auth->setUser($user);
+                    return $this->redirect(['controller' => 'Users', 'action' => 'index']);
+                } else {
+                    $this->Auth->setUser($user);
+                    return $this->redirect(['controller' => 'Users', 'action' => 'view', $user['user_id']]);
+                }
             }
             $this->Flash->error(__('Incorrect! Try again'));
         }
@@ -253,7 +313,7 @@ class UsersController extends AppController
             return true;
         }
 // user login can view and change user
-        if (in_array($this->request->action, ['view', 'delete', 'change'])) {
+        if (in_array($this->request->action, ['view', 'edit'])) {
             if ($user['user_id'] == $this->request->param('pass.0')) {
                 return true;
             }
