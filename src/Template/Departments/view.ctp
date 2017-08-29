@@ -5,6 +5,7 @@
         <li><?= $this->Form->postLink(__('Delete Department'), ['action' => 'delete', $department->department_id], ['confirm' => __('Are you sure you want to delete # {0}?', $department->department_id)]) ?> </li>
         <li><?= $this->Html->link(__('List Departments'), ['action' => 'index']) ?> </li>
         <li><?= $this->Html->link(__('New Department'), ['action' => 'add']) ?> </li>
+        <li><?= $this->Html->link('Export List Staff', ['controller' => 'Departments', 'action' => 'export', $department->department_id]) ?></li>
     </ul>
 </nav>
 <div class="departments view large-9 medium-8 columns content">

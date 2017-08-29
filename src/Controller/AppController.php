@@ -64,7 +64,7 @@ class AppController extends Controller
             ]
         ]);
     }
-    
+
     /**
      * Is Authorized method
      * 
@@ -89,7 +89,7 @@ class AppController extends Controller
     {
         
     }
-    
+
     /**
      * Before render callback.
      *

@@ -175,10 +175,10 @@ class UsersController extends AppController
             'contain' => ['Managers', 'Managers.Departments']
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
-        //Change in users table
+            //Change in users table
             $user = $this->Users->patchEntity($user, $this->request->data);
             $user->modify = time();
-        //Change in Manager table
+            //Change in Manager table
             //Delete all record and add again
             $this->Users->Managers->query()->delete()
                 ->where(['user_id' => $user->user_id])
