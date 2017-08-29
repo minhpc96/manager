@@ -111,6 +111,19 @@ class DepartmentsController extends AppController
     }
 
     /**
+     * Export list staff to file excel method
+     * 
+     * @return File A file excel of list staff
+     */
+    public function export($id)
+    {
+        $data = $this->Departments->Managers->find('all')->where(['department_id' => $id])->contain(['Users'])->toArray();
+        $this->set(compact('data'));
+        $this->viewBuilder()->layout('xls/default');
+        $this->RequestHandler->respondAs('xlsx');
+    }
+    
+    /**
      * IsAuthorized method
      * 
      * @param Users $user
