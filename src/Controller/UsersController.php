@@ -37,12 +37,16 @@ class UsersController extends AppController
         $this->paginate = [
             'contain' => ['Managers']
         ];
-        $users = $this->paginate($this->Users);
         if (!empty($this->request->data)) {
-            $reset = $this->request->data();
-            $this->resetPassword($reset);
+            if ($this->request->data('reset') != null) {
+                $reset = $this->request->data('reset');
+                $this->resetPassword($reset);
+            } elseif ($this->request->data('search') != null) {
+                $search = $this->request->data('search');
+                $this->search($search);
+            }
         }
-
+        $users = $this->paginate($this->Users->find('all', ['group' => 'username']));
         $this->set(compact('users'));
         $this->set('_serialize', ['users']);
     }
@@ -62,6 +66,40 @@ class UsersController extends AppController
         $relatedusers = $this->Users->Managers->find('all', ['contain' => ['Users']]);
         $this->set(compact('user', 'relatedusers'));
         $this->set('_serialize', ['user']);
+    }
+
+    /**
+     * Search method
+     * 
+     * @param string|null $search
+     * @return \Cake\Network\Response|null
+     */
+    public function search($search)
+    {
+        $search = trim($search);
+        $conditions[] = [
+            "OR" => [
+                "Users.username LIKE" => "%" . $search . "%",
+                "Users.name LIKE" => "%" . $search . "%",
+                "departments.department_name LIKE" => "%" . $search . "%",
+            ],
+        ];
+        $this->paginate = ['all',
+            'join' => [
+                [
+                    'table' => 'managers',
+                    'type' => 'inner',
+                    'conditions' => ['Users.user_id = managers.user_id']
+                ],
+                [
+                    'table' => 'departments',
+                    'type' => 'inner',
+                    'conditions' => ['departments.department_id = managers.department_id']
+                ]
+            ],
+            'conditions' => $conditions,
+            'contain' => ['Managers', 'Managers.Departments']
+        ];
     }
 
     /**
@@ -237,46 +275,22 @@ class UsersController extends AppController
      */
     public function resetPassword($reset = null)
     {
-        if (!empty($reset['resetAll'])) {
-            //Send email reset password
-            $users = $this->paginate($this->Users);
-            echo $users;
-            foreach ($users as $user) {
-                echo $user->email;
-                if ($user->role == 'user') {
-                    //create token and send email to active
-                    $key = Security::hash(uniqid());
-                    //create timeout check 1 day
-                    $timeout = time() + DAY;
-                    $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
-                    $user->token = $key;
-                    $user->timeout = $timeout;
-                    $user->password = 'abcd1234';
-                    $user->lastLogin = null;
-                    if ($this->Users->save($user)) {
-                        $this->sendEmail($user, $url);
-                    }
-                }
+        foreach ($reset as $resetId) {
+            $user = $this->Users->get($resetId);
+            //create token and send email to active
+            $key = Security::hash(uniqid());
+            //create timeout check 1 day
+            $timeout = time() + DAY;
+            $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
+            $user->token = $key;
+            $user->timeout = $timeout;
+            $user->password = 'abcd1234';
+            $user->lastLogin = null;
+            if ($this->Users->save($user)) {
+                $this->sendEmail($user, $url);
             }
-            return $this->redirect(['action' => 'index']);
-        } else {
-            foreach ($reset as $resetId) {
-                $user = $this->Users->get($resetId);
-                //create token and send email to active
-                $key = Security::hash(uniqid());
-                //create timeout check 1 day
-                $timeout = time() + DAY;
-                $url = 'http://192.168.56.56:8080' . Router::url(['controller' => 'Users', 'action' => 'active']) . '/' . $key;
-                $user->token = $key;
-                $user->timeout = $timeout;
-                $user->password = 'abcd1234';
-                $user->lastLogin = null;
-                if ($this->Users->save($user)) {
-                    $this->sendEmail($user, $url);
-                }
-            }
-            return $this->redirect(['action' => 'index']);
         }
+        return $this->redirect(['action' => 'index']);
     }
 
     /**
