@@ -252,6 +252,7 @@ class UsersController extends AppController
                     $user->token = $key;
                     $user->timeout = $timeout;
                     $user->password = 'abcd1234';
+                    $user->lastLogin = null;
                     if ($this->Users->save($user)) {
                         $this->sendEmail($user, $url);
                     }
@@ -269,6 +270,7 @@ class UsersController extends AppController
                 $user->token = $key;
                 $user->timeout = $timeout;
                 $user->password = 'abcd1234';
+                $user->lastLogin = null;
                 if ($this->Users->save($user)) {
                     $this->sendEmail($user, $url);
                 }
@@ -295,7 +297,7 @@ class UsersController extends AppController
             );
             if ($this->Users->save($user)) {
                 $this->Flash->success(__('New password has been saved.'));
-                return $this->redirect($this->Auth->redirectUrl());
+                return $this->redirect(['controller' => 'Users', 'action' => 'view', $user->user_id]);
             } else {
                 $this->Flash->error(__('The password could not be saved. Please, try again.'));
             }
@@ -312,12 +314,22 @@ class UsersController extends AppController
         if ($this->request->is('post')) {
             $user = $this->Auth->identify();
             if ($user) {
-                if ($user['role'] == 'admin') {
+                if ($user['lastLogin'] != null) {
                     $this->Auth->setUser($user);
-                    return $this->redirect(['controller' => 'Users', 'action' => 'index']);
+                    $user = $this->Users->get($user['user_id']);
+                    $user->lastLogin = time();
+                    $this->Users->save($user);
+                    if ($user->role == 'admin') {
+                        return $this->redirect(['controller' => 'Users', 'action' => 'index']);
+                    } else {
+                        return $this->redirect(['controller' => 'Users', 'action' => 'view', $user['user_id']]);
+                    }
                 } else {
                     $this->Auth->setUser($user);
-                    return $this->redirect(['controller' => 'Users', 'action' => 'view', $user['user_id']]);
+                    $user = $this->Users->get($user['user_id']);
+                    $user->lastLogin = time();
+                    $this->Users->save($user);
+                    return $this->redirect(['controller' => 'Users', 'action' => 'changepassword', $user['user_id']]);
                 }
             }
             $this->Flash->error(__('Incorrect! Try again'));

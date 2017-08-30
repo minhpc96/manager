@@ -9,7 +9,7 @@
     </ul>
 </nav>
 <div class="departments view large-9 medium-8 columns content">
-    <h3><?= h($department->department_id) ?></h3>
+    <h3><?= h($department->department_name) ?></h3>
     <table class="vertical-table">
         <tr>
             <th><?= __('Department ID') ?></th>

@@ -25,8 +25,9 @@ foreach($data as $user){
 // Rename sheet
 $objPHPExcel->getActiveSheet()->setTitle('List Staff');
 
+$filename = $department->department_name . '.xlsx';
+header("Content-Disposition: attachment; filename=\"$filename\"");
 header('Content-Type: application/vnd.ms-excel');
-header('Content-Disposition: attachment; filename="export.xlsx"');
 header('Cache-Control: max-age=0');
 
 
