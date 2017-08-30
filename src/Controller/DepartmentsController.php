@@ -118,7 +118,8 @@ class DepartmentsController extends AppController
     public function export($id)
     {
         $data = $this->Departments->Managers->find('all')->where(['department_id' => $id])->contain(['Users'])->toArray();
-        $this->set(compact('data'));
+        $department = $this->Departments->get($id);
+        $this->set(compact('data', 'department'));
         $this->viewBuilder()->layout('xls/default');
         $this->RequestHandler->respondAs('xlsx');
     }
@@ -133,6 +134,10 @@ class DepartmentsController extends AppController
     {
         // Admin has full access
         if ($user['role'] == 'admin') {
+            return true;
+        }
+        // user login can view info and export
+        if (in_array($this->request->action, ['view', 'export'])) {
             return true;
         }
         return parent::isAuthorized($user);
