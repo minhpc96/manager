@@ -8,9 +8,13 @@
 </nav>
 <div class="users index large-9 medium-8 columns content">
     <h3><?= __('Users') ?></h3>
+    <?= $this->Form->create() ?>
+    <?= $this->Form->input('search', ['label' => '', 'empty' => '_blank']) ?>
+    <?= $this->Form->button(__('Search')) ?>
+    <?= $this->Form->end() ?>
     <script language="JavaScript">
 	function selectAll(source) {
-		checkboxes = document.getElementsByName('reset');
+		checkboxes = document.getElementsByName('reset[]');
 		for(var i in checkboxes)
 			checkboxes[i].checked = source.checked;
 	}
@@ -19,7 +23,7 @@
     <table cellpadding="0" cellspacing="0">
         <thead>
             <tr>
-                <th><?= $this->Form->checkbox('resetAll', ['onClick' => 'selectAll(this)', 'hiddenField' => false]) ?></th>
+                <th><?= $this->Form->checkbox('reset', ['name' => 'resetAll', 'onClick' => 'selectAll(this)', 'hiddenField' => false]) ?></th>
                 <th><?= $this->Paginator->sort('username') ?></th>
                 <th><?= $this->Paginator->sort('name') ?></th>
                 <th><?= $this->Paginator->sort('email') ?></th>
@@ -30,7 +34,7 @@
         <tbody>
             <?php foreach ($users as $user): ?>
             <tr>
-                <td><?= $this->Form->checkbox('reset', ['value' => $user->user_id, 'hiddenField' => false]) ?></td>
+                <td><?= $this->Form->checkbox('reset', ['value' => $user->user_id, 'name' => 'reset[]', 'hiddenField' => false]) ?></td>
                 <td><?= h($user->username) ?></td>
                 <td><?= $this->Html->link($user->name, ['action' => 'view', $user->user_id]) ?></td>
                 <td><?= h($user->email) ?></td>
