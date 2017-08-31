@@ -214,8 +214,19 @@ class UsersController extends AppController
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             //Change in users table
+            $filename = $user->avatar;
             $user = $this->Users->patchEntity($user, $this->request->data);
             $user->modify = time();
+            if (!empty($this->request->data['avatar']['name'])) {
+                $filename = $this->request->data('username') . '.jpg';
+                $uploadpath = 'img/';
+                $uploadFile = $uploadpath . $filename;
+                if (move_uploaded_file($this->request->data['avatar']['tmp_name'], $uploadFile)) {
+                    $user->avatar = $filename;
+                }
+            } else {
+                $user->avatar = $filename;
+            }
             //Change in Manager table
             //Delete all record and add again
             $this->Users->Managers->query()->delete()
@@ -225,17 +236,19 @@ class UsersController extends AppController
                 $department_ids = $this->request->data('department_id');
                 $managers = $this->request->data('manager');
                 //Add relationship users with departments
-                foreach ($department_ids as $department_id) {
-                    $manager = $this->Users->Managers->newEntity();
-                    $manager->department_id = $department_id;
-                    $manager->user_id = $user->user_id;
-                    if (in_array($department_id, $managers)) {
-                        $manager->isManager = 1;
+                if ($this->request->data('department_id')) {
+                    foreach ($department_ids as $department_id) {
+                        $manager = $this->Users->Managers->newEntity();
+                        $manager->department_id = $department_id;
+                        $manager->user_id = $user->user_id;
+                        if ($managers != null && in_array($department_id, $managers)) {
+                            $manager->isManager = 1;
+                        }
+                        $this->Users->Managers->save($manager);
                     }
-                    $this->Users->Managers->save($manager);
                 }
                 $this->Flash->success(__('The user has been saved.'));
-                return $this->redirect(['action' => 'index']);
+                return $this->redirect(['action' => 'view', $id]);
             } else {
                 $this->Flash->error(__('The user could not be saved. Please, try again.'));
             }
