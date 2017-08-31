@@ -30,6 +30,24 @@
             <td><?= h($user->name) ?></td>
         </tr>
         <tr>
+            <th><?= __('Birth Day') ?></th>
+            <td><?= date('d-m-Y',strtotime($user->birthday)) ?></td>
+        </tr>
+        <tr>
+            <th><?= __('Gender') ?></th>
+            <td>
+                <?php
+                    if ($user->gender == 0) : 
+                        echo 'Male';
+                    elseif ($user->gender == 1) :
+                        echo 'Female';
+                    else :
+                        echo 'Other';
+                    endif;
+                ?>
+            </td>
+        </tr>
+        <tr>
             <th><?= __('Role') ?></th>
             <td><?= h($user->role) ?></td>
         </tr>
