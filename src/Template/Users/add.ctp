@@ -13,6 +13,8 @@
             echo $this->Form->input('email');
             echo $this->Form->input('password');
             echo $this->Form->input('name');
+            echo $this->Form->input('birthday');
+            echo $this->Form->input('gender', ['type' => 'select', 'options' => ['0' => 'Male', '1' => 'Female', '2' => 'Other']]);
             echo $this->Form->input('role', ['options' => ['admin' => 'Admin', 'user' => 'User'], 'empty' => false]);
             echo $this->Form->input('department_id', ['type' => 'select', 'multiple' => 'checkbox' , 'options' => $departments]);
             echo $this->Form->input('manager', ['type' => 'select', 'multiple' => 'checkbox' , 'options' => $departments]);
