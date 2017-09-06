@@ -1,6 +1,7 @@
 <nav class="large-3 medium-4 columns" id="actions-sidebar">
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
+        <li><?= $this->Html->link(__('List User'), ['action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('New User'), ['action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('Change Password'), [ 'action' => 'changepassword', $current_user['user_id']]) ?></li>
         <li><?= $this->Html->link(__('Logout'), ['action' => 'logout']) ?></li>
@@ -8,7 +9,7 @@
 </nav>
 <div class="users index large-9 medium-8 columns content">
     <h3><?= __('Users') ?></h3>
-    <?= $this->Form->create() ?>
+    <?= $this->Form->create($users, ['url' => ['controller' => 'Users', 'action' => 'search']]) ?>
     <?= $this->Form->input('search', ['label' => '', 'empty' => '_blank']) ?>
     <?= $this->Form->button(__('Search')) ?>
     <?= $this->Form->end() ?>
@@ -19,7 +20,7 @@
 			checkboxes[i].checked = source.checked;
 	}
     </script>
-    <?= $this->Form->create() ?>
+    <?= $this->Form->create($users, ['url' => ['controller' => 'Users', 'action' => 'resetpassword']]) ?>
     <table cellpadding="0" cellspacing="0">
         <thead>
             <tr>
