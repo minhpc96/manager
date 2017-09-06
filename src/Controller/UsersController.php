@@ -37,15 +37,6 @@ class UsersController extends AppController
         $this->paginate = [
             'contain' => ['Managers']
         ];
-        if (!empty($this->request->data)) {
-            if ($this->request->data('reset') != null) {
-                $reset = $this->request->data('reset');
-                $this->resetPassword($reset);
-            } elseif ($this->request->data('search') != null) {
-                $search = $this->request->data('search');
-                $this->search($search);
-            }
-        }
         $users = $this->paginate($this->Users->find('all', ['group' => 'username']));
         $this->set(compact('users'));
         $this->set('_serialize', ['users']);
@@ -71,12 +62,11 @@ class UsersController extends AppController
     /**
      * Search method
      * 
-     * @param string|null $search
      * @return \Cake\Network\Response|null
      */
-    public function search($search)
+    public function search()
     {
-        $search = trim($search);
+        $search = trim($this->request->data('search'));
         $conditions[] = [
             "OR" => [
                 "Users.username LIKE" => "%" . $search . "%",
@@ -88,18 +78,22 @@ class UsersController extends AppController
             'join' => [
                 [
                     'table' => 'managers',
-                    'type' => 'inner',
+                    'type' => 'left',
                     'conditions' => ['Users.user_id = managers.user_id']
                 ],
                 [
                     'table' => 'departments',
-                    'type' => 'inner',
+                    'type' => 'left',
                     'conditions' => ['departments.department_id = managers.department_id']
                 ]
             ],
             'conditions' => $conditions,
             'contain' => ['Managers', 'Managers.Departments']
         ];
+        $users = $this->paginate($this->Users);
+        $this->set(compact('users'));
+        $this->set('_serialize', ['users']);
+        $this->render('index');
     }
 
     /**
@@ -286,8 +280,9 @@ class UsersController extends AppController
      * @param array $reset
      * @return Update password of records
      */
-    public function resetPassword($reset = null)
+    public function resetPassword()
     {
+        $reset = $this->request->data('reset');
         foreach ($reset as $resetId) {
             $user = $this->Users->get($resetId);
             //create token and send email to active
